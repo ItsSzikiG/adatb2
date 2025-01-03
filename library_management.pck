@@ -1,7 +1,6 @@
 CREATE OR REPLACE PACKAGE library_management IS
 
   FUNCTION check_book_availability(p_book_id IN NUMBER) RETURN NUMBER;
-  PROCEDURE calculate_fines;
   PROCEDURE issue_book(p_member_id IN NUMBER
                       ,p_book_id   IN NUMBER);
   PROCEDURE add_book(p_title          IN VARCHAR2
@@ -23,6 +22,7 @@ END library_management;
 /
 CREATE OR REPLACE PACKAGE BODY library_management IS
 
+  --Check Book Availability
   FUNCTION check_book_availability(p_book_id IN NUMBER) RETURN NUMBER IS
     v_available_stock NUMBER;
   BEGIN
@@ -36,6 +36,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
       RETURN - 2;
   END check_book_availability;
 
+  --Issue Book
   PROCEDURE issue_book(p_member_id IN NUMBER
                       ,p_book_id   IN NUMBER) IS
     v_book_stock NUMBER;
@@ -65,6 +66,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
       RAISE;
   END issue_book;
 
+  --Add Book
   PROCEDURE add_book(p_title          IN VARCHAR2
                     ,p_author         IN VARCHAR2
                     ,p_genre          IN VARCHAR2 DEFAULT NULL
@@ -91,6 +93,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
       raise_application_error(-20002, 'Failed to add book: ' || SQLERRM);
   END add_book;
 
+  --Add member
   PROCEDURE add_member(p_first_name  IN VARCHAR2
                       ,p_second_name IN VARCHAR2
                       ,p_address     IN VARCHAR2 DEFAULT NULL
@@ -114,6 +117,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
       raise_application_error(-20003, 'Failed to add member: ' || SQLERRM);
   END add_member;
 
+  --Add Staff
   PROCEDURE add_staff(p_first_name  IN VARCHAR2
                      ,p_second_name IN VARCHAR2
                      ,p_role        IN VARCHAR2 DEFAULT NULL
@@ -137,6 +141,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
       raise_application_error(-20005, 'Failed to add staff: ' || SQLERRM);
   END add_staff;
 
+  --Return Book
   PROCEDURE return_book(p_borrow_record_id IN NUMBER) IS
     v_book_id NUMBER;
   BEGIN

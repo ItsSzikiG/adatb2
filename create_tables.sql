@@ -9,9 +9,9 @@ CREATE TABLE books(
     ID NUMBER PRIMARY KEY,
     title VARCHAR2(250) NOT NULL,
     author VARCHAR2(250) NOT NULL,
-    genre Varchar2(100),
+    genre VARCHAR2(100),
     published_year NUMBER,
-    stock NUMBER default 0 not null
+    stock NUMBER DEFAULT 0 NOT NULL
 );
 
 CREATE TABLE members(
@@ -36,7 +36,7 @@ CREATE TABLE staff (
     ID NUMBER PRIMARY KEY,
     first_name VARCHAR2(50) NOT NULL,
     second_name VARCHAR2(50) NOT NULL,
-    role VARCHAR2(100),
+    ROLE VARCHAR2(100),
     contact VARCHAR2(100)
 );
 
@@ -79,7 +79,7 @@ END;
 
 --Views
 CREATE OR REPLACE VIEW available_books AS
-SELECT id, title, author, genre, published_year, stock
+SELECT ID, title, author, genre, published_year, stock
 FROM books
 WHERE stock > 0;
 
