@@ -11,7 +11,11 @@ CREATE TABLE books(
     author VARCHAR2(250) NOT NULL,
     genre VARCHAR2(100),
     published_year NUMBER,
-    stock NUMBER DEFAULT 0 NOT NULL
+    stock NUMBER DEFAULT 0 NOT NULL,
+    mod_user VARCHAR2(300) NOT NULL,
+    created_on TIMESTAMP(6) NOT NULL,
+    last_mod TIMESTAMP(6) NOT NULL,
+    dml_flag VARCHAR2(1) NOT NULL CHECK (dml_flag IN ('I', 'U', 'D'))
 );
 
 CREATE TABLE members(
