@@ -5,7 +5,6 @@ SELECT * FROM staff;
 
 SELECT * FROM available_book;
 SELECT * FROM overdue_book;
-SELECT * FROM member_borrow_history;
 
 -- Test book availability checking and borrowing
 DECLARE
@@ -45,3 +44,8 @@ BEGIN
   ROLLBACK ;
 END;
 /
+
+SELECT * FROM borrow_record_history;
+SELECT * FROM book_history;
+SELECT * FROM member_history;
+SELECT * FROM staff_history;
