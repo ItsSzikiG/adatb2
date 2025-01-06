@@ -26,7 +26,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
   FUNCTION check_book_availability(p_book_id IN NUMBER) RETURN NUMBER IS
     v_available_stock NUMBER;
   BEGIN
-    SELECT stock INTO v_available_stock FROM books WHERE id = p_book_id;
+    SELECT stock INTO v_available_stock FROM book WHERE id = p_book_id;
   
     RETURN CASE WHEN v_available_stock > 0 THEN 1 ELSE 0 END;
   EXCEPTION
@@ -41,14 +41,14 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
                       ,p_book_id   IN NUMBER) IS
     v_book_stock NUMBER;
   BEGIN
-    SELECT stock INTO v_book_stock FROM books WHERE id = p_book_id;
+    SELECT stock INTO v_book_stock FROM book WHERE id = p_book_id;
   
     IF v_book_stock <= 0
     THEN
       raise_application_error(-20001, 'Book not available in stock');
     END IF;
   
-    INSERT INTO borrow_records
+    INSERT INTO borrow_record
       (member_id
       ,book_id
       ,borrow_date)
@@ -57,7 +57,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
       ,p_book_id
       ,SYSDATE);
   
-    UPDATE books SET stock = stock - 1 WHERE id = p_book_id;
+    UPDATE book SET stock = stock - 1 WHERE id = p_book_id;
   
     COMMIT;
   EXCEPTION
@@ -73,7 +73,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
                     ,p_published_year IN NUMBER DEFAULT NULL
                     ,p_initial_stock  IN NUMBER DEFAULT 1) IS
   BEGIN
-    INSERT INTO books
+    INSERT INTO book
       (title
       ,author
       ,genre
@@ -99,7 +99,7 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
                       ,p_address     IN VARCHAR2 DEFAULT NULL
                       ,p_contact     IN VARCHAR2 DEFAULT NULL) IS
   BEGIN
-    INSERT INTO members
+    INSERT INTO MEMBER
       (first_name
       ,second_name
       ,address
@@ -145,12 +145,12 @@ CREATE OR REPLACE PACKAGE BODY library_management IS
   PROCEDURE return_book(p_borrow_record_id IN NUMBER) IS
     v_book_id NUMBER;
   BEGIN
-    UPDATE borrow_records
+    UPDATE borrow_record
        SET return_date = SYSDATE
      WHERE id = p_borrow_record_id
     RETURNING book_id INTO v_book_id;
   
-    UPDATE books SET stock = stock + 1 WHERE id = v_book_id;
+    UPDATE book SET stock = stock + 1 WHERE id = v_book_id;
   
     COMMIT;
   EXCEPTION

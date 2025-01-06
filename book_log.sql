@@ -1,55 +1,48 @@
---Sequence
-CREATE SEQUENCE books_history_seq START WITH 1;
-
 --History table
-CREATE TABLE books_history (
-    history_id NUMBER PRIMARY KEY,
-    id NUMBER NOT NULL,
+CREATE TABLE book_history (
+    id NUMBER,
     title VARCHAR2(250),
     author VARCHAR2(250),
     genre VARCHAR2(100),
     published_year NUMBER,
     stock NUMBER,
-    mod_user VARCHAR2(300) NOT NULL,
-    created_on TIMESTAMP(6) NOT NULL,
-    last_mod TIMESTAMP(6) NOT NULL,
-    dml_flag VARCHAR2(1) NOT NULL CHECK (dml_flag IN ('I', 'U', 'D'))
+    mod_user VARCHAR2(300),
+    created_on TIMESTAMP(6),
+    last_mod TIMESTAMP(6),
+    dml_flag VARCHAR2(1)
 );
 
 --History trigger
-CREATE OR REPLACE TRIGGER books_history_trg
-AFTER DELETE OR UPDATE OR INSERT ON books
+CREATE OR REPLACE TRIGGER book_history_trg
+AFTER DELETE OR UPDATE OR INSERT ON book
 FOR EACH ROW
 BEGIN
     
     IF INSERTING THEN
-        INSERT INTO books_history (
-            history_id, id, title, author, genre, published_year, stock,
+        INSERT INTO book_history (
+            id, title, author, genre, published_year, stock,
             mod_user, created_on, last_mod, dml_flag
         ) VALUES (
-            books_history_seq.NEXTVAL,
             :NEW.id, :NEW.title, :NEW.author, :NEW.genre, :NEW.published_year, :NEW.stock,
             SYS_CONTEXT('USERENV', 'SESSION_USER'),
             :NEW.created_on, SYSTIMESTAMP, 'I'
         );
     
     ELSIF UPDATING THEN
-        INSERT INTO books_history (
-            history_id, id, title, author, genre, published_year, stock,
+        INSERT INTO book_history (
+            id, title, author, genre, published_year, stock,
             mod_user, created_on, last_mod, dml_flag
         ) VALUES (
-            books_history_seq.NEXTVAL,
             :NEW.id, :NEW.title, :NEW.author, :NEW.genre, :NEW.published_year, :NEW.stock,
             SYS_CONTEXT('USERENV', 'SESSION_USER'),
             :NEW.created_on, SYSTIMESTAMP, 'U'
         );
     
     ELSIF DELETING THEN
-        INSERT INTO books_history (
-            history_id, id, title, author, genre, published_year, stock,
+        INSERT INTO book_history (
+            id, title, author, genre, published_year, stock,
             mod_user, created_on, last_mod, dml_flag
         ) VALUES (
-            books_history_seq.NEXTVAL,
             :OLD.id, :OLD.title, :OLD.author, :OLD.genre, :OLD.published_year, :OLD.stock,
             SYS_CONTEXT('USERENV', 'SESSION_USER'),
             :OLD.created_on, SYSTIMESTAMP, 'D'
@@ -57,14 +50,14 @@ BEGIN
     END IF;
 EXCEPTION
     WHEN OTHERS THEN
-        dbms_output.put_line('Error in books_history_trg: ' || SQLERRM);
+        dbms_output.put_line('Error in book_history_trg: ' || SQLERRM);
         RAISE;
 END;
 /
 
 --Audit trigger
-CREATE OR REPLACE TRIGGER books_audit_trg
-BEFORE INSERT OR UPDATE ON books
+CREATE OR REPLACE TRIGGER book_audit_trg
+BEFORE INSERT OR UPDATE ON book
 FOR EACH ROW 
 BEGIN 
     IF INSERTING THEN

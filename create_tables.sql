@@ -1,11 +1,11 @@
 --Sequences
-CREATE SEQUENCE books_seq START WITH 1000;
-CREATE SEQUENCE members_seq START WITH 5000;
-CREATE SEQUENCE borrowrecords_seq START WITH 9000;
+CREATE SEQUENCE book_seq START WITH 1000;
+CREATE SEQUENCE member_seq START WITH 5000;
+CREATE SEQUENCE borrowrecord_seq START WITH 9000;
 CREATE SEQUENCE staff_seq START WITH 7000;
 
 --Tables
-CREATE TABLE books(
+CREATE TABLE book(
     ID NUMBER PRIMARY KEY,
     title VARCHAR2(250) NOT NULL,
     author VARCHAR2(250) NOT NULL,
@@ -18,22 +18,30 @@ CREATE TABLE books(
     dml_flag VARCHAR2(1) NOT NULL CHECK (dml_flag IN ('I', 'U', 'D'))
 );
 
-CREATE TABLE members(
+CREATE TABLE MEMBER(
     ID NUMBER PRIMARY KEY,
     first_name VARCHAR2(50) NOT NULL,
     second_name VARCHAR2(50) NOT NULL,
     address VARCHAR2(500) NOT NULL,
-    contact VARCHAR2(100) NOT NULL
+    contact VARCHAR2(100) NOT NULL,
+    mod_user VARCHAR2(300) NOT NULL,
+    created_on TIMESTAMP(6) NOT NULL,
+    last_mod TIMESTAMP(6) NOT NULL,
+    dml_flag VARCHAR2(1) NOT NULL CHECK (dml_flag IN ('I', 'U', 'D'))
 );
 
-CREATE TABLE borrow_records (
+CREATE TABLE borrow_record (
     ID NUMBER PRIMARY KEY,
     member_id NUMBER NOT NULL,
     book_id NUMBER NOT NULL,
     borrow_date DATE DEFAULT SYSDATE NOT NULL,
     return_date DATE,
-    CONSTRAINT fk_member FOREIGN KEY (member_id) REFERENCES members(ID),
-    CONSTRAINT fk_book FOREIGN KEY (book_id) REFERENCES books(ID)
+    CONSTRAINT fk_member FOREIGN KEY (member_id) REFERENCES member(ID),
+    CONSTRAINT fk_book FOREIGN KEY (book_id) REFERENCES book(ID),
+    mod_user VARCHAR2(300) NOT NULL,
+    created_on TIMESTAMP(6) NOT NULL,
+    last_mod TIMESTAMP(6) NOT NULL,
+    dml_flag VARCHAR2(1) NOT NULL CHECK (dml_flag IN ('I', 'U', 'D'))
 );
 
 CREATE TABLE staff (
@@ -41,33 +49,37 @@ CREATE TABLE staff (
     first_name VARCHAR2(50) NOT NULL,
     second_name VARCHAR2(50) NOT NULL,
     ROLE VARCHAR2(100),
-    contact VARCHAR2(100)
+    contact VARCHAR2(100),
+    mod_user VARCHAR2(300) NOT NULL,
+    created_on TIMESTAMP(6) NOT NULL,
+    last_mod TIMESTAMP(6) NOT NULL,
+    dml_flag VARCHAR2(1) NOT NULL CHECK (dml_flag IN ('I', 'U', 'D'))
 );
 
 --Triggers
-CREATE OR REPLACE TRIGGER books_id_trigger
-BEFORE INSERT ON books
+CREATE OR REPLACE TRIGGER book_id_trigger
+BEFORE INSERT ON book
 FOR EACH ROW
 BEGIN
-    SELECT books_seq.NEXTVAL 
+    SELECT book_seq.NEXTVAL 
     INTO :NEW.ID 
     FROM DUAL;
 END;
 
-CREATE OR REPLACE TRIGGER members_id_trigger
-BEFORE INSERT ON members
+CREATE OR REPLACE TRIGGER member_id_trigger
+BEFORE INSERT ON member
 FOR EACH ROW
 BEGIN
-    SELECT members_seq.NEXTVAL 
+    SELECT member_seq.NEXTVAL 
     INTO :NEW.ID 
     FROM DUAL;
 END;
 
-CREATE OR REPLACE TRIGGER borrow_records_id_trigger
-BEFORE INSERT ON borrow_records
+CREATE OR REPLACE TRIGGER borrow_record_id_trigger
+BEFORE INSERT ON borrow_record
 FOR EACH ROW
 BEGIN
-    SELECT borrowrecords_seq.NEXTVAL 
+    SELECT borrowrecord_seq.NEXTVAL 
     INTO :NEW.ID 
     FROM DUAL;
 END;
@@ -82,17 +94,17 @@ BEGIN
 END;
 
 --Views
-CREATE OR REPLACE VIEW available_books AS
+CREATE OR REPLACE VIEW available_book AS
 SELECT ID, title, author, genre, published_year, stock
-FROM books
+FROM book
 WHERE stock > 0;
 
-CREATE OR REPLACE VIEW overdue_books AS
+CREATE OR REPLACE VIEW overdue_book AS
 SELECT br.id, m.first_name, m.second_name, b.title, br.borrow_date, 
        TRUNC(SYSDATE - br.borrow_date) AS days_overdue
-FROM borrow_records br
-JOIN members m ON br.member_id = m.id
-JOIN books b ON br.book_id = b.id
+FROM borrow_record br
+JOIN member m ON br.member_id = m.id
+JOIN book b ON br.book_id = b.id
 WHERE br.return_date IS NULL AND TRUNC(SYSDATE - br.borrow_date) > 14;
 
 CREATE OR REPLACE VIEW member_borrow_history AS
@@ -102,6 +114,6 @@ SELECT m.id AS member_id,
        b.title, 
        br.borrow_date, 
        br.return_date
-FROM borrow_records br
-JOIN members m ON br.member_id = m.id
-JOIN books b ON br.book_id = b.id;
+FROM borrow_record br
+JOIN member m ON br.member_id = m.id
+JOIN book b ON br.book_id = b.id;
